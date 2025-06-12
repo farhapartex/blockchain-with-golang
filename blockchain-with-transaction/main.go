@@ -172,11 +172,11 @@ func (tx *Transaction) isValid(bc *Blockchain) bool {
 
 	// Check if signature exists
 	if len(tx.Signature) == 0 {
-		fmt.Printf("❌ Transaction %s has no signature\n", tx.ID[:8])
+		fmt.Printf("Transaction %s has no signature\n", tx.ID[:8])
 		return false
 	}
 
-	fmt.Printf("✅ Transaction %s signature verified\n", tx.ID[:8])
+	fmt.Printf("Transaction %s signature verified\n", tx.ID[:8])
 	return true
 }
 
@@ -221,14 +221,14 @@ func (b *Block) calculateHash() string {
 func (b *Block) mineBlock(difficulty int) {
 	target := strings.Repeat("0", difficulty)
 
-	fmt.Printf("⛏️  Mining block %d with %d transactions...", b.Index, len(b.Transactions))
+	fmt.Printf("Mining block %d with %d transactions...", b.Index, len(b.Transactions))
 
 	for !strings.HasPrefix(b.Hash, target) {
 		b.Nonce++
 		b.Hash = b.calculateHash()
 	}
 
-	fmt.Printf(" MINED! 🎉\n")
+	fmt.Printf(" MINED!\n")
 	fmt.Printf("   Hash: %s\n", b.Hash)
 	fmt.Printf("   Nonce: %d\n", b.Nonce)
 }
@@ -237,7 +237,7 @@ func (b *Block) mineBlock(difficulty int) {
 func (bc *Blockchain) AddTransaction(transaction *Transaction) bool {
 	// Validate transaction
 	if !transaction.isValid(bc) {
-		fmt.Printf("❌ Invalid transaction rejected\n")
+		fmt.Printf("Invalid transaction rejected\n")
 		return false
 	}
 
@@ -245,13 +245,13 @@ func (bc *Blockchain) AddTransaction(transaction *Transaction) bool {
 	if transaction.From != "" {
 		senderBalance := bc.getBalance(transaction.From)
 		if senderBalance < transaction.Amount {
-			fmt.Printf("❌ Insufficient balance. Has: %.2f, Trying to send: %.2f\n",
+			fmt.Printf("Insufficient balance. Has: %.2f, Trying to send: %.2f\n",
 				senderBalance, transaction.Amount)
 			return false
 		}
 	}
 
-	fmt.Printf("✅ Transaction added: %s → %s (%.2f coins)\n",
+	fmt.Printf("Transaction added: %s → %s (%.2f coins)\n",
 		transaction.From[:8], transaction.To[:8], transaction.Amount)
 	return true
 }
