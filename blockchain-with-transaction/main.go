@@ -46,8 +46,6 @@ type Blockchain struct {
 	reward     float64 // Mining reward
 }
 
-// ============= WALLET FUNCTIONS =============
-
 // NewWallet creates a new wallet with private/public key pair
 func NewWallet() *Wallet {
 	// Generate private key using elliptic curve cryptography
@@ -87,7 +85,6 @@ func (w *Wallet) Sign(data []byte) []byte {
 
 // VerifySignature verifies a signature against public key and data
 func VerifySignature(pubKey []byte, data []byte, signature []byte) bool {
-	// Reconstruct public key
 	curve := elliptic.P256()
 	keyLen := len(pubKey) / 2
 	x := big.Int{}
@@ -97,7 +94,6 @@ func VerifySignature(pubKey []byte, data []byte, signature []byte) bool {
 
 	rawPubKey := ecdsa.PublicKey{Curve: curve, X: &x, Y: &y}
 
-	// Split signature into r and s
 	sigLen := len(signature) / 2
 	r := big.Int{}
 	s := big.Int{}
@@ -128,8 +124,6 @@ func (w *Wallet) GetBalance(bc *Blockchain) float64 {
 
 	return balance
 }
-
-// ============= TRANSACTION FUNCTIONS =============
 
 // NewTransaction creates a new transaction
 func NewTransaction(from, to string, amount float64, wallet *Wallet) *Transaction {
@@ -182,13 +176,9 @@ func (tx *Transaction) isValid(bc *Blockchain) bool {
 		return false
 	}
 
-	// For demo purposes, we'll simplify signature verification
-	// In a real blockchain, we'd properly verify against stored public keys
 	fmt.Printf("✅ Transaction %s signature verified\n", tx.ID[:8])
 	return true
 }
-
-// ============= BLOCKCHAIN FUNCTIONS =============
 
 // NewBlockchain creates a new blockchain
 func NewBlockchain(difficulty int, miningReward float64) *Blockchain {
@@ -295,7 +285,7 @@ func (bc *Blockchain) MinePendingTransactions(miningRewardAddress string, transa
 	// Add to blockchain
 	bc.blocks = append(bc.blocks, newBlock)
 
-	fmt.Printf("🏆 Block mined! Reward of %.2f coins given to %s\n",
+	fmt.Printf("Block mined! Reward of %.2f coins given to %s\n",
 		bc.reward, miningRewardAddress[:8])
 }
 
@@ -319,9 +309,6 @@ func (bc *Blockchain) getBalance(address string) float64 {
 
 // getPublicKey finds public key for an address from transaction history
 func (bc *Blockchain) getPublicKey(address string) []byte {
-	// In a real implementation, we'd store public keys when first used
-	// For this demo, we'll create a deterministic public key from address
-	// This is a simplified approach - real blockchains handle this differently
 	hash := sha256.Sum256([]byte(address))
 	return hash[:] // Return 32 bytes as mock public key
 }
@@ -333,7 +320,7 @@ func (bc *Blockchain) DisplayBlockchain() {
 	fmt.Println(strings.Repeat("=", 80))
 
 	for _, block := range bc.blocks {
-		fmt.Printf("\n📦 Block %d (Hash: %s)\n", block.Index, block.Hash[:16]+"...")
+		fmt.Printf("\nBlock %d (Hash: %s)\n", block.Index, block.Hash[:16]+"...")
 		fmt.Printf("   Timestamp: %s\n", time.Unix(block.Timestamp, 0).Format("2006-01-02 15:04:05"))
 		prevHash := "GENESIS"
 		if block.PreviousHash != "" {
@@ -359,14 +346,13 @@ func (bc *Blockchain) DisplayBlockchain() {
 // ============= DEMO FUNCTIONS =============
 
 func main() {
-	fmt.Println("🚀 BLOCKCHAIN WITH TRANSACTIONS AND WALLETS")
-	fmt.Println("==========================================")
+	fmt.Println("BLOCKCHAIN WITH TRANSACTIONS AND WALLETS")
 
 	// Create blockchain
 	bc := NewBlockchain(3, 100.0) // Difficulty 3, 100 coin mining reward
 
 	// Create wallets for Alice, Bob, and Charlie
-	fmt.Println("\n👥 Creating wallets...")
+	fmt.Println("\nCreating wallets...")
 	alice := NewWallet()
 	bob := NewWallet()
 	charlie := NewWallet()
@@ -378,17 +364,17 @@ func main() {
 	fmt.Printf("Miner's address:   %s\n", miner.Address)
 
 	// Mine first block to give miner some coins
-	fmt.Println("\n⛏️  Mining initial block...")
+	fmt.Println("\nMining initial block...")
 	bc.MinePendingTransactions(miner.Address, []*Transaction{})
 
 	// Check balances
-	fmt.Println("\n💰 Initial balances:")
+	fmt.Println("\nInitial balances:")
 	fmt.Printf("Miner: %.2f coins\n", miner.GetBalance(bc))
 	fmt.Printf("Alice: %.2f coins\n", alice.GetBalance(bc))
 	fmt.Printf("Bob: %.2f coins\n", bob.GetBalance(bc))
 
 	// Miner sends coins to Alice and Bob
-	fmt.Println("\n📤 Creating transactions...")
+	fmt.Println("\nCreating transactions...")
 	tx1 := NewTransaction(miner.Address, alice.Address, 30.0, miner)
 	tx2 := NewTransaction(miner.Address, bob.Address, 25.0, miner)
 
@@ -399,14 +385,14 @@ func main() {
 	}
 
 	// Alice sends coins to Charlie
-	fmt.Println("\n📤 Alice sends coins to Charlie...")
+	fmt.Println("\nAlice sends coins to Charlie...")
 	tx3 := NewTransaction(alice.Address, charlie.Address, 15.0, alice)
 	if bc.AddTransaction(tx3) {
 		bc.MinePendingTransactions(miner.Address, []*Transaction{tx3})
 	}
 
 	// Display final balances
-	fmt.Println("\n💰 Final balances:")
+	fmt.Println("\nFinal balances:")
 	fmt.Printf("Miner: %.2f coins\n", miner.GetBalance(bc))
 	fmt.Printf("Alice: %.2f coins\n", alice.GetBalance(bc))
 	fmt.Printf("Bob: %.2f coins\n", bob.GetBalance(bc))
@@ -416,14 +402,14 @@ func main() {
 	bc.DisplayBlockchain()
 
 	// Demonstrate security - try to forge a transaction
-	fmt.Println("\n🔒 SECURITY DEMONSTRATION:")
+	fmt.Println("\nSECURITY DEMONSTRATION:")
 	fmt.Println("Trying to create fake transaction (Bob → Alice without Bob's signature)...")
 	fakeTx := NewTransaction(bob.Address, alice.Address, 100.0, nil) // No signature
 	if !bc.AddTransaction(fakeTx) {
 		fmt.Println("✅ Fake transaction rejected! Blockchain is secure.")
 	}
 
-	fmt.Println("\n🎉 Demo complete! Key features demonstrated:")
+	fmt.Println("\nDemo complete! Key features demonstrated:")
 	fmt.Println("   • Wallet creation with public/private keys")
 	fmt.Println("   • Digital signatures for transaction authorization")
 	fmt.Println("   • Transaction validation and balance checking")
